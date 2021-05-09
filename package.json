@@ -1,8 +1,12 @@
 {
   "name": "json-power-query",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simpler version of a json querying mechanism.",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TotalTechGeek/json-power-query"
+  },
   "author": "Jesse Daniel Mitchell",
   "license": "MIT",
   "scripts": {
