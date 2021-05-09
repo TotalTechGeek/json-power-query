@@ -53,6 +53,12 @@ describe('Query Builder Tests', () => {
         expect(f(person)).toBe(2)
     })
 
+    test('Get value from an array index', () => {
+        const f = queryBuilder('$.interests.1')
+        expect(f(person)).toBe('business')
+    })
+
+
     test('Try out filtering', () => {
         const f = queryBuilder('$.friends.*{ ">": [{ "var": "age" }, 20] }.name')
         expect(f(person)).toStrictEqual(['Bob', 'Kevin', 'Steve'])
@@ -67,6 +73,7 @@ describe('Query Builder Tests', () => {
         const f = queryBuilder('$.friends.*{ ">": [{ "var": "age" }, { "context": "age" }] }.name')
         expect(f(person, { age: 20 })).toStrictEqual(['Bob', 'Kevin', 'Steve'])
     })
+
 })
 
 describe('Object Query Builder', () => {

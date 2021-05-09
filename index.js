@@ -14,7 +14,7 @@ engine.addMethod('context', (key) => {
 })
 
 function accessor (key) {
-    if ((key||'').match(/[\(\)\+\[\]]/) && !key.startsWith('"')) {
+    if (((key||'').match(/[\(\)\+\[\]]/) || key.match(/^[0-9]/)) && !key.startsWith('"')) {
         key = `"${key}"`
     }
 
