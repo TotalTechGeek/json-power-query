@@ -1,0 +1,18 @@
+{
+  "name": "json-query-engine",
+  "version": "1.0.0",
+  "description": "A simpler version of a json querying mechanism.",
+  "main": "index.js",
+  "author": "Jesse Daniel Mitchell",
+  "license": "MIT",
+  "scripts": {
+    "test": "nyc jest --coverage"
+  },
+  "dependencies": {
+    "json-logic-engine": "^1.1.2"
+  },
+  "devDependencies": {
+    "jest": "^26.6.3",
+    "nyc": "^15.1.0"
+  }
+}

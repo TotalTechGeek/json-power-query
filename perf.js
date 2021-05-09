@@ -1,0 +1,38 @@
+const { objectQueryBuilder } = require('.')
+
+const f = objectQueryBuilder({
+    age: '$.body.age',
+    name: '$.body.name',
+    id: '$.params.id',
+    friends: '$.body."friends list".*{ "===": [{ "var": "id" }, { "context": "id" }] }.name'
+})
+
+
+const body = {
+    body: {
+        age: 23,
+        name: 'Jesse Mitchell',
+        "friends list": [{
+            id: 5,
+            age: 17,
+            name: 'Kevin'
+        }, {
+            id: 8
+        }, {
+            id: 12
+        }, {
+            id: 111
+        }]       
+    },
+    params: {
+        id: 17
+    }
+}
+
+console.time('Test')
+for(let i = 0; i < 1e5; i++) {
+    f(body, { id: 5 })
+}
+console.log(f(body, { id: 5 }))
+console.timeEnd('Test')
+
