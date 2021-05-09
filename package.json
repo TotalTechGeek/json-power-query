@@ -1,5 +1,5 @@
 {
-  "name": "json-query-engine",
+  "name": "json-power-query",
   "version": "1.0.0",
   "description": "A simpler version of a json querying mechanism.",
   "main": "index.js",

@@ -1,4 +1,4 @@
-# JSON Query Engine
+# JSON Power Query
 
 This is a simple JSON querying mechanism similar to jsonpath. This mechanism allows for ultra-fast queries by "compiling" your queries into evaluated JavaScript.
 
