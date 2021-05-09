@@ -14,6 +14,10 @@ engine.addMethod('context', (key) => {
 })
 
 function accessor (key) {
+    if ((key||'').match(/[\(\)\+\[\]]/) && !key.startsWith('"')) {
+        key = `"${key}"`
+    }
+
     if (key.startsWith('"')) {
         return `[${key}]`
     }
@@ -166,7 +170,7 @@ function _simpleMutationBuilder(query, { evaluate = true } = {}) {
 
 
     const querySection = query.reduce((str, item) => {
-        return `(${str} || 0).${item}`
+        return `(${str} || 0)${accessor(item)}`
     }, 'data')
 
     const result = `((data, mutator, current) => { ${querySection} = typeof mutator === "function" ? mutator(${querySection}) : mutator; return data })`
