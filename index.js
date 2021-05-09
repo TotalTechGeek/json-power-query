@@ -26,7 +26,7 @@ function accessor (key) {
  * @param {Boolean} evaluate Determines whether to output a string or a function
  * @returns {Function|String}
  */
-function simpleQueryBuilder(query, evaluate = true) {
+function _simpleQueryBuilder(query, { evaluate = true }) {
     if (query === '$') {
         return i => i
     }
@@ -62,18 +62,28 @@ function simpleQueryBuilder(query, evaluate = true) {
  * @param {Array} logic 
  * @returns {Function|String}
  */
-function advancedQueryBuilder(query, evaluate = true, logic = []) {
+function _advancedQueryBuilder(query, { evaluate = true, logic = [], parent = false } = {}) {
     const pieces = ['']
     const splitQuery = query.split('.')
     splitQuery.shift()
     let contextUsed = false
-    for (let item of splitQuery) {
+    for (let i = 0; i < splitQuery.length; i++) {
+        let item = splitQuery[i]
         if (item.startsWith('*')) {
             pieces.push('')
             item = item.substring(1)
+
+            let str = item
+            while(str && item && !str.endsWith('}')) {
+                item = splitQuery[++i]
+                str += `.${item}`
+            }
+
             // not necessarily true, but will work for our use cases
-            if (item.includes('"context"')) contextUsed = true
-            logic.push(item.trim() ? engine.build(JSON.parse(item.trim())) : null)
+            if (str.includes('"context"')) contextUsed = true
+
+
+            logic.push(str.trim() ? engine.build(JSON.parse(str.trim())) : null)
             continue
         }
         pieces[pieces.length - 1] += `.${item}`
@@ -105,8 +115,13 @@ function advancedQueryBuilder(query, evaluate = true, logic = []) {
         loopString += `if (isIterable(${iterated})) for (const l_${i} of ${iterated}) {
             ${logic[i] ? `if(!logic[${i}](l_${i})) continue;` : ''}
             const i_${i} = ${queryMaker(pieces[i], `l_${i}`, last ? 'null' : '[]')};
-            ${last ? `results.push(i_${i}); ${'}'.repeat(pieces.length)}` : ''}
         `
+        if (parent) {
+            loopString += `${last ? `results.push([i_${i}, ${iterated}]); ${'}'.repeat(pieces.length)}` : ''}`
+        }
+        else {
+            loopString += `${last ? `results.push(i_${i}); ${'}'.repeat(pieces.length)}` : ''}`
+        }
     }
 
     const result = `((data, current) => { ${contextUsed ? 'currentQueryObject = current;' : ''} const results = []; const beginning = ${queryMaker(start, 'data', '[]')}; ${loopString}; return results; })`
@@ -126,15 +141,15 @@ function advancedQueryBuilder(query, evaluate = true, logic = []) {
  * @param {Array} logic 
  * @returns {Function|String}
  */
-function queryBuilder(query, evaluate = true, logic = []) {
+function queryBuilder(query, { evaluate = true, logic = [] } = {}) {
     if (!query.startsWith('$')) {
         throw new Error('Query is not valid')
     }
 
     if (query.includes('.*')) {
-        return advancedQueryBuilder(query, evaluate, logic)
+        return _advancedQueryBuilder(query, { evaluate, logic })
     } else {
-        return simpleQueryBuilder(query, evaluate)
+        return _simpleQueryBuilder(query, { evaluate })
     }
 }
 
@@ -145,7 +160,7 @@ function queryBuilder(query, evaluate = true, logic = []) {
  * @param {Boolean} evaluate 
  * @returns 
  */
-function simpleMutationBuilder(query, evaluate = true) {
+function _simpleMutationBuilder(query, { evaluate = true } = {}) {
 
     query = query.substring(2).split('.')
 
@@ -160,7 +175,6 @@ function simpleMutationBuilder(query, evaluate = true) {
         return result
     }
 
-    // works if we support node 14 :)
     return eval(result)
 }
 
@@ -172,18 +186,28 @@ function simpleMutationBuilder(query, evaluate = true) {
  * @param {Array} logic 
  * @returns 
  */
-function advancedMutationBuilder(query, evaluate = true, logic = []) {
+function _advancedMutationBuilder(query, { evaluate = true, logic = [] } = {}) {
     const pieces = ['']
     const splitQuery = query.split('.')
     splitQuery.shift()
     let contextUsed = false
-    for (let item of splitQuery) {
+    for (let i = 0; i < splitQuery.length; i++) {
+        let item = splitQuery[i]
         if (item.startsWith('*')) {
             pieces.push('')
             item = item.substring(1)
+
+            let str = item
+            while(str && item && !str.endsWith('}')) {
+                item = splitQuery[++i]
+                str += `.${item}`
+            }
+
             // not necessarily true, but will work for our use cases
-            if (item.includes('"context"')) contextUsed = true
-            logic.push(item.trim() ? engine.build(JSON.parse(item.trim())) : null)
+            if (str.includes('"context"')) contextUsed = true
+
+
+            logic.push(str.trim() ? engine.build(JSON.parse(str.trim())) : null)
             continue
         }
         pieces[pieces.length - 1] += `.${item}`
@@ -228,13 +252,11 @@ function advancedMutationBuilder(query, evaluate = true, logic = []) {
 
     const result = `((data, mutator, current) => { ${contextUsed ? 'currentQueryObject = current;' : ''} let beginning = ${queryMaker(start, 'data', '[]')}; ${loopString}; return data; })`
 
-    result //?
     if (!evaluate) {
         return result
     }
 
     return eval(result)
-
 }
 
 
@@ -247,7 +269,7 @@ function advancedMutationBuilder(query, evaluate = true, logic = []) {
  * @param {Array} logic 
  * @returns 
  */
-function mutationBuilder(query, evaluate = true, logic = []) {
+function mutationBuilder(query, { evaluate = true, logic = [] } = {}) {
     if (!query.startsWith('$')) {
         throw new Error('Query is not valid')
     }
@@ -257,30 +279,28 @@ function mutationBuilder(query, evaluate = true, logic = []) {
     }
 
     if (query.includes('.*')) {
-        return advancedMutationBuilder(query, evaluate, logic)
+        return _advancedMutationBuilder(query, { evaluate, logic })
     } else {
-        return simpleMutationBuilder(query, evaluate)
+        return _simpleMutationBuilder(query, { evaluate })
     }
 }
 
 
 
 /**
- * Constructs an efficient function to build an object
- * by traversing another object
+ * 
  * @param {Object} obj 
- * @param {Boolean} evaluate 
- * @param {Array} logic 
+ * @param {{ evaluate?: Boolean, logic?: Array }} param1 
  * @returns 
  */
-function objectQueryBuilder(obj, evaluate = true, logic = []) {
+function objectQueryBuilder(obj, { evaluate = true, logic = [] } = {}) {
     const result = (`((data, current) => ({${Object.keys(obj).map(key => {
 
         if (typeof obj[key] === 'object') {
-            return `${JSON.stringify(key)}: ${objectQueryBuilder(obj[key], false, logic)}(data, current)`
+            return `${JSON.stringify(key)}: ${objectQueryBuilder(obj[key], { evaluate: false, logic })}(data, current)`
         }
 
-        return `${JSON.stringify(key)}: ${queryBuilder(obj[key], false, logic)}(data, current)`
+        return `${JSON.stringify(key)}: ${queryBuilder(obj[key], { evaluate: false, logic })}(data, current)`
     }).join(', ')}}))`)
 
 
@@ -293,6 +313,7 @@ function objectQueryBuilder(obj, evaluate = true, logic = []) {
 module.exports = {
     objectQueryBuilder,
     queryBuilder,
+    _advancedQueryBuilder,
     mutationBuilder,
     engine
 }

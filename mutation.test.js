@@ -1,4 +1,17 @@
-const { mutationBuilder } = require('.')
+const { mutationBuilder, _advancedQueryBuilder } = require('.')
+
+
+function createRemover(query) {
+    const f = _advancedQueryBuilder(query, { parent: true })
+    return function () {
+        const result = f(...arguments)
+        for(const [item, arr] of result) {
+            const index = arr.indexOf(item)
+            arr.splice(index, 1)
+        }
+        return arguments[0]
+    }
+}
 
 const personCreator = () => ({
     age: 23,
@@ -39,5 +52,12 @@ describe('Mutation Tests', () => {
         expect(f(person, i => i + 1).interests).toStrictEqual(['programming1', 'business1'])
     })
 
-
+    test('Removal mutation (using a query)', () => {
+        const person = personCreator()
+        const f = createRemover('$.friends.*{ "<": [{ "var": "age" }, { "context": "" }] }')
+        expect(f(person, 30).friends).toStrictEqual([{
+            name: 'Steve',
+            age: 32
+        }])
+    })
 })
