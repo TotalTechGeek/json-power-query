@@ -52,9 +52,15 @@ Requesting filtered values from an array:
 ```js
 // the filtering uses json-logic-engine, and uses truthiness.
 const olderFriendNames = queryBuilder('$.body.friends.*{ ">": [{ "var": "age" }, 30] }.name')
-
 console.log(JSON.stringify(olderFriendNames(request))) // prints: ["Bob", "Erik"]
 ```
+
+Alternatively, you can use the more normal looking JSONPath Syntax:
+```js
+const olderFriendNames = queryBuilder('$.body.friends.[?(@.age > 30)].name')
+console.log(JSON.stringify(olderFriendNames(request))) // prints: ["Bob", "Erik"]
+```
+
 
 You can also build a function that transforms object shapes into different shapes:
 ```js

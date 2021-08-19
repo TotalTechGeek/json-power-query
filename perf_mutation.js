@@ -9,7 +9,6 @@ const people = [
 const f = mutationBuilder('$.*')
 
 f(people, i => { i.age = (i.age||0) + 1; return i })
-console.log(people)
 
 function createRemover(query) {
     const f = _advancedQueryBuilder(query, { parent: true })
@@ -23,7 +22,8 @@ function createRemover(query) {
     }
 }
 
-const g = createRemover('$.*{ ">": [{ "var": "age" }, { "context": "" }] }') 
+const g = createRemover('$.[?(@.age > $)]') 
+console.log(people)
 console.log(g(people, 13))
 
 
@@ -38,10 +38,9 @@ function push(query, item) {
 }
 
 function set (query, item) {
-    const f= mutationBuilder(query)
+    const f = mutationBuilder(query)
     f(store, item)
 }
-
 
 set('$.names', i => i || [])
 push('$.names', { name: 'Jesse' })

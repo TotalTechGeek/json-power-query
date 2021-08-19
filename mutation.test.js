@@ -52,7 +52,16 @@ describe('Mutation Tests', () => {
         expect(f(person, i => i + 1).interests).toStrictEqual(['programming1', 'business1'])
     })
 
-    test('Removal mutation (using a query)', () => {
+    test('Removal mutation (using a query w/o context)', () => {
+        const person = personCreator()
+        const f = createRemover('$.friends.*{ "<": [{ "var": "age" }, 30] }')
+        expect(f(person).friends).toStrictEqual([{
+            name: 'Steve',
+            age: 32
+        }])
+    })
+
+    test('Removal mutation (using a query w/ context)', () => {
         const person = personCreator()
         const f = createRemover('$.friends.*{ "<": [{ "var": "age" }, { "context": "" }] }')
         expect(f(person, 30).friends).toStrictEqual([{
