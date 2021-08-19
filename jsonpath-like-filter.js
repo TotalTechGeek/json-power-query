@@ -3,7 +3,7 @@
 // I could've gone with an OTS library that supported this functionality, but to eliminate dependencies I 
 // just wanted to quickly throw something together.
 
-const priorities = [['||'], ['&&'], ['!==', '!=', '===', '=='], ['<=', '<', '>', '>='], ['+', '-'], ['*', '/'], ['**'], ['!']].reverse()
+const priorities = [['||'], ['&&'], ['!==', '!=', '===', '=='], ['<=', '<', '>', '>=', 'in'], ['+', '-'], ['%'], ['*', '/'], ['**'], ['!']].reverse()
 const allOperators = priorities.reduce((a,b) => a.concat(b), []) 
 const unary = new Set(['!'])
 
@@ -16,6 +16,7 @@ const operatorFunctions = {
     '/': 'div',
     '%': 'mod',
     '||': 'or',
+    'in': 'In',
     '&&': 'and',
     '<': 'lt',
     '<=': 'lte',
@@ -38,6 +39,7 @@ function invert (obj) {
 const logicalOps = invert(operatorFunctions) 
 logicalOps.or = 'or'
 logicalOps.and = 'and'
+logicalOps.In = 'in'
 
 /**
  * 
@@ -235,7 +237,7 @@ function removeStrings (str) {
 
 
 function generateLogic (str) {
-    const expr = /^\[\?\([A-Za-z0-9 $@.!*<=>|$()'"\\]+\)\]$/
+    const expr = /^\[\?\([A-Za-z0-9 $@.!*<=>|$()'"/%\\]+\)\]$/
     if (expr.exec(str)) {
         const query = str.substring(3, str.length -2) //?
         const { text, strings } = removeStrings(query)
