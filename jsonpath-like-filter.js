@@ -1,5 +1,7 @@
 
-
+// A not so great implementation of a formula parser.
+// I could've gone with an OTS library that supported this functionality, but to eliminate dependencies I 
+// just wanted to quickly throw something together.
 
 const priorities = [['||'], ['&&'], ['!==', '!=', '===', '=='], ['<=', '<', '>', '>='], ['+', '-'], ['*', '/'], ['**'], ['!']].reverse()
 const allOperators = priorities.reduce((a,b) => a.concat(b), []) 
@@ -80,12 +82,12 @@ function replace (str) {
             })) continue;
 
             let prevIndex = index-1
-            while(prevIndex >= 1 && /[$@.A-Za-z0-9_(),]/.exec(str[prevIndex - 1])) {
+            while(prevIndex >= 1 && /[$@.A-Za-z0-9_(),'"#]/.exec(str[prevIndex - 1])) {
                 prevIndex--;
             }
         
             let nextIndex = index + operator.length
-            while(nextIndex < str.length +1 && /[$@.A-Za-z0-9_(),]/.exec(str[nextIndex + 1])) {
+            while(nextIndex < str.length +1 && /[$@.A-Za-z0-9_(),'"#]/.exec(str[nextIndex + 1])) {
                 nextIndex++;
             }
 
@@ -130,30 +132,31 @@ function splitOutsideParenthesis (str, splitter =',') {
 }
 
 
-
-
 /**
  * 
  * @param {string} str 
  */
-function toLogic (str) {
+function toLogic (str, strings) {
     if (/^[0-9.]+$/g.exec(str)) {
         return Number(str)
     }
 
     if (str.indexOf('(') !== -1) {
+        
         const [head, ...tail] = str.split('(')
 
         let rest =  tail.join('(')
         rest = rest.substring(0, rest.length -1)
         
+        
         const operands = splitOutsideParenthesis(rest)
         
+        
         if (operands.length > 1) {
-            return { [logicalOps[head]]: operands.map(toLogic) }
+            return { [logicalOps[head]]: operands.map(i => toLogic(i, strings)) }
         }
         
-        return { [logicalOps[head]]: toLogic(operands[0]) }
+        return { [logicalOps[head]]: toLogic(operands[0], strings) }
     }
 
     if (str.startsWith('@.')) {
@@ -173,15 +176,70 @@ function toLogic (str) {
         return str === 'true'
     }
 
+    
+    if ((str.startsWith('\'') && str.endsWith('\'')) || (str.startsWith('\"') && str.endsWith('\"'))) {
+        return str.substring(1, str.length -1)
+    }
+
+    if (str.startsWith('#')) {
+        return strings[+str.substring(1)]
+    }
+
     throw new Error('Not a valid query')
+}
+
+/**
+ * Simple mechanism for removing the string variables. 
+ * @param {string} str 
+ */
+function removeStrings (str) {
+    const strings = []
+    let cur = ''
+    let quoteMode = 0
+    let backslash = false
+    for (let i = 0; i < str.length; i++) {
+        if (!backslash && str[i] === '"') {
+            if (quoteMode === 1) {
+                quoteMode = 0
+            } else if (!quoteMode) {
+                cur += '#' + strings.length
+                strings.push('')
+                quoteMode = 1
+            }
+        }
+        else if (!backslash && str[i] === "'") {
+            if (quoteMode === 2) {
+                quoteMode = 0
+            } else if (!quoteMode) {
+                cur += '#' + strings.length
+                strings.push('')
+                quoteMode = 2
+            }
+        } 
+        else if (str[i] === '\\') {
+            backslash = true
+        }
+        else if (quoteMode) {
+            backslash = false
+            strings[strings.length - 1] += str[i]
+        }
+        else {
+            backslash = false
+            cur += str[i]
+        }
+    }
+
+    return { text: cur, strings }
+
 }
 
 
 function generateLogic (str) {
-    const expr = /^\[\?\([A-Za-z0-9 $@.!*<=>|$()]+\)\]$/
+    const expr = /^\[\?\([A-Za-z0-9 $@.!*<=>|$()'"\\]+\)\]$/
     if (expr.exec(str)) {
         const query = str.substring(3, str.length -2) //?
-        return toLogic(replace(query))
+        const { text, strings } = removeStrings(query)
+        return toLogic(replace(text), strings)
     }
     else {
         throw new Error('Not a valid query')

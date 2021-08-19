@@ -65,6 +65,12 @@ describe('Query Builder Tests', () => {
     test('Try out filtering w/ JSONPath Syntax', () => {
         const f = queryBuilder('$.friends.[?(@.age > 20)].name')
         expect(f(person)).toStrictEqual(['Bob', 'Kevin', 'Steve'])
+
+        const g = queryBuilder('$.friends.[?(@.name === "Aaron")].name')
+        expect(g(person)).toStrictEqual(['Aaron'])
+
+        const h = queryBuilder('$.friends.[?(@.name === \'Kevin\')].name')
+        expect(h(person)).toStrictEqual(['Kevin'])
     })
     
     test('Try out filtering with context', () => {
