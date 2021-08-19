@@ -69,4 +69,13 @@ describe('Mutation Tests', () => {
             age: 32
         }])
     })
+
+    test('Removal mutation (using a JSONPath query w/ context)', () => {
+        const person = personCreator()
+        const f = createRemover('$.friends.[?(@.age < $)]')
+        expect(f(person, 30).friends).toStrictEqual([{
+            name: 'Steve',
+            age: 32
+        }])
+    })
 })

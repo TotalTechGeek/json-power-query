@@ -313,7 +313,7 @@ function mutationBuilder(query, { evaluate = true, logic = [] } = {}) {
         throw new Error('Cannot mutate top level')
     }
 
-    if (query.includes('.*')) {
+    if (query.includes('.*') || query.includes('.[')) {
         return _advancedMutationBuilder(query, { evaluate, logic })
     } else {
         return _simpleMutationBuilder(query, { evaluate })
