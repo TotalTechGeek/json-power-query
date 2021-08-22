@@ -237,7 +237,7 @@ function removeStrings (str) {
 
 
 function generateLogic (str) {
-    const expr = /^\[\?\([A-Za-z0-9 $@.!*<=>|$()'"/%\\]+\)\]$/
+    const expr = /^\[\?\([A-Za-z0-9 $@.!&*+-<=>|$()'"/%\\]+\)\]$/
     if (expr.exec(str)) {
         const query = str.substring(3, str.length -2) //?
         const { text, strings } = removeStrings(query)

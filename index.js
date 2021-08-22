@@ -6,7 +6,7 @@ const engine = new LogicEngine()
 const isIterable = obj => obj != null && typeof obj[Symbol.iterator] === 'function'
 
 function _mutateTraverse (obj, mut = i => i) {
-    if(!obj) return obj 
+    if(!obj) return obj
 
     for (const key in obj) {
         if (typeof obj[key] === 'object') {
@@ -22,14 +22,14 @@ const replaceVarContext = i => {
     if(typeof i.var !== 'undefined') {
         if (i.var)
         return {
-            var: `item.${i.var}` 
+            var: `item.${i.var}`
         }
         return { var: 'item' }
     }
 
     if (typeof i.context !== 'undefined') {
         if (i.context)
-        return { 
+        return {
             var: `context.${i.context}`
         }
         return { var: 'context' }
@@ -90,13 +90,13 @@ function _parseQuery (query, { logic = [], context = [] }) {
         let item = splitQuery[i]
         const arrQuery = item.startsWith('[')
         if (item.startsWith('*') || arrQuery) {
-            
+
             pieces.push('')
             item = item.substring(1)
 
             let str = item
             const ending = arrQuery ? ']' : '}'
-    
+
             while(str && item && !str.endsWith(ending)) {
                 item = splitQuery[++i]
                 str += `.${item}`
@@ -105,7 +105,7 @@ function _parseQuery (query, { logic = [], context = [] }) {
             if (arrQuery) {
                 str = JSON.stringify(generateLogic(`[${str}`))
             }
-            
+
 
             const {logicBody, contextUsed} = parseLogic(str)
             logic.push(logicBody)
@@ -122,7 +122,7 @@ function _parseQuery (query, { logic = [], context = [] }) {
 
 /**
  * Builds a complex query that supports arrays & logic.
- * @param {String} query 
+ * @param {String} query
  * @param {{ evaluate: boolean, logic: Function[], parent: boolean, context: boolean[], unsafeOverrideLogic: (i: number, iterated: string) => string } }
  * @returns {Function|String}
  */
@@ -179,28 +179,28 @@ function _advancedQueryBuilder(query, { evaluate = true, logic = [], parent = fa
 function parseLogic(str) {
     if (str.trim()) {
         const logic = JSON.parse(str.trim())
-        
-        let contextUsed = false 
+
+        let contextUsed = false
         _mutateTraverse(logic, i => {
             if (typeof i.context !== 'undefined') contextUsed = true
             return i
         })
 
         if (contextUsed) {
-            
-            return { logicBody: engine.build(_mutateTraverse(logic, replaceVarContext)), contextUsed } 
+
+            return { logicBody: engine.build(_mutateTraverse(logic, replaceVarContext)), contextUsed }
         }
 
-        return { logicBody: engine.build(logic), contextUsed } 
+        return { logicBody: engine.build(logic), contextUsed }
     }
     return { logicBody: null, contextUsed: false }
 }
 
 /**
  * Builds a function to query an object with.
- * @param {String} query 
- * @param {Boolean} evaluate 
- * @param {Array} logic 
+ * @param {String} query
+ * @param {Boolean} evaluate
+ * @param {Array} logic
  * @returns {Function|String}
  */
 function queryBuilder(query, { evaluate = true, logic = [], context = [] } = {}) {
@@ -218,7 +218,7 @@ function queryBuilder(query, { evaluate = true, logic = [], context = [] } = {})
 /**
  * Builds a simple function that'll mutate the data at the given query
  * with the data passed in
- * @param {String} query 
+ * @param {String} query
  * @param {{ evaluate: Boolean }} options
  */
 function _simpleMutationBuilder(query, { evaluate = true } = {}) {
@@ -242,10 +242,10 @@ function _simpleMutationBuilder(query, { evaluate = true } = {}) {
 /**
  * Builds a function that'll mutate the given data at the given query destination
  * for the data passed in.
- * @param {String} query 
- * @param {Boolean} evaluate 
- * @param {Array} logic 
- * @returns 
+ * @param {String} query
+ * @param {Boolean} evaluate
+ * @param {Array} logic
+ * @returns
  */
 function _advancedMutationBuilder(query, { evaluate = true, logic = [], context = [] } = {}) {
     const {pieces, start} = _parseQuery(query, { logic, context })
@@ -273,14 +273,15 @@ function _advancedMutationBuilder(query, { evaluate = true, logic = [], context 
         return `${item} = typeof mutator === "function" ? mutator(${item}) : mutator`
     }
 
+
     for (let i = 0; i < pieces.length; i++) {
         const last = i === pieces.length - 1
         const first = i === 0
-
         const iterated = first ? 'beginning' : `i_${i-1}`
         loopString += `if (isIterable(${iterated})) for (let index_${i} = 0; index_${i} < ${iterated}.length; index_${i}++) {
             ${logic[i] ? `if(!logic[${i}](${ context[i] ? `{ item: ${iterated}[index_${i}], context }` : `${iterated}[index_${i}]` })) continue;` : ''}
-            ${last && pieces[i] ? createAssignment(`${queryMaker(pieces[i], `${iterated}[index_${i}]`, undefined)}`) : createAssignment(`${iterated}[index_${i}]`) }
+            ${last && (pieces[i] ? createAssignment(`${queryMaker(pieces[i], `${iterated}[index_${i}]`, undefined)}`) : createAssignment(`${iterated}[index_${i}]`)) || ''}
+            ${!last ? `const i_${i} = ${queryMaker(pieces[i], `${iterated}[index_${i}]`, last ? 'null' : '[]')};` : ''}
             ${last ? `${'}'.repeat(pieces.length)}` : ''}
         `
     }
@@ -299,10 +300,10 @@ function _advancedMutationBuilder(query, { evaluate = true, logic = [], context 
  * Creates a function that modifies the object at a destination
  * designated by the query. The function takes in the data, the modifier (constant or function),
  * and / or context you might wish to use for any filters.
- * @param {String} query 
- * @param {Boolean} evaluate 
- * @param {Array} logic 
- * @returns 
+ * @param {String} query
+ * @param {Boolean} evaluate
+ * @param {Array} logic
+ * @returns {(obj: *, mutator: ((item: any) => any) | any) => any}
  */
 function mutationBuilder(query, { evaluate = true, logic = [] } = {}) {
     if (!query.startsWith('$')) {
@@ -323,14 +324,14 @@ function mutationBuilder(query, { evaluate = true, logic = [] } = {}) {
 
 
 /**
- * 
- * @param {Object} obj 
- * @param {{ evaluate?: Boolean, logic?: Array }} param1 
- * @returns 
+ *
+ * @param {Object} obj
+ * @param {{ evaluate?: Boolean, logic?: Array }} options
+ * @returns {(data: any, context: any) => any}
  */
 function objectQueryBuilder(obj, { evaluate = true, logic = [], context = [] } = {}) {
 
-    let result 
+    let result
     if (Array.isArray(obj)) {
         result = `((data, current) => [${obj.map(i => {
 
@@ -346,9 +347,9 @@ function objectQueryBuilder(obj, { evaluate = true, logic = [], context = [] } =
             if (typeof obj[key] === 'object') {
                 return `${JSON.stringify(key)}: ${objectQueryBuilder(obj[key], { evaluate: false, logic, context })}(data, current)`
             }
-    
+
             return `${JSON.stringify(key)}: ${queryBuilder(obj[key], { evaluate: false, logic, context })}(data, current)`
-        }).join(', ')}}))`)    
+        }).join(', ')}}))`)
     }
 
     if (!evaluate) return result
@@ -358,9 +359,9 @@ function objectQueryBuilder(obj, { evaluate = true, logic = [], context = [] } =
 
 
 /**
- * Constructs a generator 
- * @param {string} query 
- * @param {{ evaluate: boolean }} param1 
+ * Constructs a generator
+ * @param {string} query
+ * @param {{ evaluate: boolean }} param1
  * @returns {(data: any) => Generator<any>}
  */
 function generatorBuilder (query, { evaluate = true, logic = [], context = [] } = {}) {
@@ -369,8 +370,8 @@ function generatorBuilder (query, { evaluate = true, logic = [], context = [] } 
     }
 
     if (query.includes('.*') || query.includes('.[')) {
-        return _advancedQueryBuilder(query, { 
-            evaluate, 
+        return _advancedQueryBuilder(query, {
+            evaluate,
             logic,
             context,
             signature: 'function * (data, context)',
@@ -378,8 +379,8 @@ function generatorBuilder (query, { evaluate = true, logic = [], context = [] } 
                 return `yield i_${i}`
             }
         })
-    } 
-        
+    }
+
     throw new Error('Query does not iterate over an array.')
 }
 

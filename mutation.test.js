@@ -19,10 +19,12 @@ const personCreator = () => ({
     interests: ['programming', 'business'],
     friends: [{
         name: 'Bob',
-        age: 25
+        age: 25,
+        interests: [{ type: 'fun' }]
     }, {
         name: 'Kevin',
-        age: 23
+        age: 23,
+        interests: [{ type: 'fun' }, { type: 'see' }]
     }, {
         name: 'Steve',
         age: 32
@@ -40,10 +42,19 @@ describe('Mutation Tests', () => {
         expect(f(person, 24)).toStrictEqual({ ...person, age: 24 })
     })
 
+
     test('Simple mutation (variable)', () => {
         const person = personCreator()
         const f = mutationBuilder('$.age')
         expect(f(person, i => i + 1)).toStrictEqual({ ...person, age: 24 })
+    })
+
+
+    test('Complex nested mutation', () => {
+        const person = personCreator()
+        const f = mutationBuilder('$.friends.*.interests.*.type')
+        f(person, 'changed')
+        expect(person.friends.flatMap(i => i.interests).filter(i=>i).map(i=>i.type)).toStrictEqual(['changed', 'changed', 'changed'])  
     })
 
     test('Complex mutation', () => {
