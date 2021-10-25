@@ -1,7 +1,10 @@
+/* eslint-disable no-eval */
 import { LogicEngine } from 'json-logic-engine'
 import { generateLogic } from './jsonpath-like-filter.js'
 
 const engine = new LogicEngine()
+
+// eslint-disable-next-line no-unused-vars
 const isIterable = obj => obj != null && typeof obj[Symbol.iterator] === 'function'
 
 function mutateTraverse (obj, mut = i => i) {
@@ -34,7 +37,7 @@ const replaceVarContext = i => {
   return i
 }
 function accessor (key) {
-  if (((key || '').match(/[\(\)\+\[\]]/) || key.match(/^[0-9]/)) && !key.startsWith('"')) {
+  if (((key || '').match(/[()+[\]]/) || key.match(/^[0-9]/)) && !key.startsWith('"')) {
     key = `"${key}"`
   }
   if (key.startsWith('"')) {
@@ -135,7 +138,6 @@ function _advancedQueryBuilder (query, { evaluate = true, logic = [], parent = f
   if (!evaluate) {
     return result
   }
-  result // ?
   return eval(result)
 }
 function parseLogic (str) {
@@ -219,7 +221,7 @@ function _advancedMutationBuilder (query, { evaluate = true, logic = [], context
     const iterated = first ? 'beginning' : `i_${i - 1}`
     loopString += `if (isIterable(${iterated})) for (let index_${i} = 0; index_${i} < ${iterated}.length; index_${i}++) {
             ${logic[i] ? `if(!logic[${i}](${context[i] ? `{ item: ${iterated}[index_${i}], context }` : `${iterated}[index_${i}]`})) continue;` : ''}
-            ${last && (pieces[i] ? createAssignment(`${queryMaker(pieces[i], `${iterated}[index_${i}]`, undefined)}`) : createAssignment(`${iterated}[index_${i}]`)) || ''}
+            ${(last && (pieces[i] ? createAssignment(`${queryMaker(pieces[i], `${iterated}[index_${i}]`, undefined)}`) : createAssignment(`${iterated}[index_${i}]`))) || ''}
             ${!last ? `const i_${i} = ${queryMaker(pieces[i], `${iterated}[index_${i}]`, last ? 'null' : '[]')};` : ''}
             ${last ? `${'}'.repeat(pieces.length)}` : ''}
         `

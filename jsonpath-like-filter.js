@@ -140,7 +140,7 @@ function toLogic (str, strings) {
   if (str === 'true' || str === 'false') {
     return str === 'true'
   }
-  if ((str.startsWith('\'') && str.endsWith('\'')) || (str.startsWith('\"') && str.endsWith('\"'))) {
+  if ((str.startsWith('\'') && str.endsWith('\'')) || (str.startsWith('"') && str.endsWith('"'))) {
     return str.substring(1, str.length - 1)
   }
   if (str.startsWith('#')) {
