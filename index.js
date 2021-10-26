@@ -1,5 +1,6 @@
 /* eslint-disable no-eval */
 import { LogicEngine } from 'json-logic-engine'
+
 import { generateLogic } from './jsonpath-like-filter.js'
 
 const engine = new LogicEngine()
