@@ -49,7 +49,8 @@ function accessor (key) {
 /**
  * Builds a simple object query (no array nesting)
  * @param {String} query The query to be converted into a function
- * @param {Boolean} evaluate Determines whether to output a string or a function
+ * @param {{ evaluate?: boolean }} options
+
  * @returns {Function|String}
  */
 function _simpleQueryBuilder (query, { evaluate = true }) {
@@ -104,7 +105,7 @@ function _parseQuery (query, { logic = [], context = [] }) {
 /**
  * Builds a complex query that supports arrays & logic.
  * @param {String} query
- * @param {{ evaluate: boolean, logic: Function[], parent: boolean, context: boolean[], unsafeOverrideLogic: (i: number, iterated: string) => string } }
+ * @param {{ evaluate: boolean, logic: Function[], parent: boolean, context: boolean[], unsafeOverrideLogic: (i: number, iterated: string) => string, signature: string } }
  * @returns {Function|String}
  */
 function _advancedQueryBuilder (query, { evaluate = true, logic = [], parent = false, context = [], unsafeOverrideLogic, signature = 'function (data, context)' } = {}) {
@@ -159,8 +160,7 @@ function parseLogic (str) {
 /**
  * Builds a function to query an object with.
  * @param {String} query
- * @param {Boolean} evaluate
- * @param {Array} logic
+ * @param {{ evaluate?: boolean, logic?: any[], context?: any[] }} options
  * @returns {Function|String}
  */
 function queryBuilder (query, { evaluate = true, logic = [], context = [] } = {}) {
@@ -194,8 +194,7 @@ function _simpleMutationBuilder (query, { evaluate = true } = {}) {
  * Builds a function that'll mutate the given data at the given query destination
  * for the data passed in.
  * @param {String} query
- * @param {Boolean} evaluate
- * @param {Array} logic
+ * @param {{ evaluate?: boolean, logic?: any[], context?: any[] }} options
  * @returns
  */
 function _advancedMutationBuilder (query, { evaluate = true, logic = [], context = [] } = {}) {
@@ -238,8 +237,7 @@ function _advancedMutationBuilder (query, { evaluate = true, logic = [], context
  * designated by the query. The function takes in the data, the modifier (constant or function),
  * and / or context you might wish to use for any filters.
  * @param {String} query
- * @param {Boolean} evaluate
- * @param {Array} logic
+ * @param {{ evaluate?: boolean, logic?: any[] }} options
  * @returns {(obj: *, mutator: ((item: any) => any) | any) => any}
  */
 function mutationBuilder (query, { evaluate = true, logic = [] } = {}) {
@@ -258,7 +256,7 @@ function mutationBuilder (query, { evaluate = true, logic = [] } = {}) {
 /**
  *
  * @param {Object} obj
- * @param {{ evaluate?: Boolean, logic?: Array }} options
+ * @param {{ evaluate?: boolean, logic?: any[], context?: any[] }} options
  * @returns {(data: any, context: any) => any}
  */
 function objectQueryBuilder (obj, { evaluate = true, logic = [], context = [] } = {}) {
@@ -284,7 +282,7 @@ function objectQueryBuilder (obj, { evaluate = true, logic = [], context = [] } 
 /**
  * Constructs a generator
  * @param {string} query
- * @param {{ evaluate: boolean }} param1
+ * @param {{ evaluate?: boolean, logic?: any[], context?: any[] }} options
  * @returns {(data: any) => Generator<any>}
  */
 function generatorBuilder (query, { evaluate = true, logic = [], context = [] } = {}) {
