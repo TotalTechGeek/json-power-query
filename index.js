@@ -1,12 +1,11 @@
 /* eslint-disable no-eval */
 import { LogicEngine } from 'json-logic-engine'
+// eslint-disable-next-line no-unused-vars
+import isIterable from './isIterable.js'
 
 import { generateLogic } from './jsonpath-like-filter.js'
 
 const engine = new LogicEngine()
-
-// eslint-disable-next-line no-unused-vars
-const isIterable = obj => obj != null && typeof obj[Symbol.iterator] === 'function'
 
 function mutateTraverse (obj, mut = i => i) {
   if (!obj) { return obj }
@@ -308,11 +307,13 @@ export { generatorBuilder }
 export { _advancedQueryBuilder }
 export { mutationBuilder }
 export { engine }
+export { isIterable }
 export default {
   objectQueryBuilder,
   queryBuilder,
   generatorBuilder,
   _advancedQueryBuilder,
   mutationBuilder,
-  engine
+  engine,
+  isIterable
 }
