@@ -2941,10 +2941,10 @@ jsesc@^2.5.1:
   resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-2.5.2.tgz#80564d2e483dacf6e8ef209650a67df3f0c283a4"
   integrity sha512-OYu7XEzjkCQ3C5Ps3QIZsQfNpqoJyZZA99wd9aWd05NCtC5pWOkShK2mkL6HXQR6/Cy2lbNdPlZBpuQHXE63gA==
 
-json-logic-engine@^1.2.8:
-  version "1.2.8"
-  resolved "https://registry.yarnpkg.com/json-logic-engine/-/json-logic-engine-1.2.8.tgz#42a8741a495ae223f003a14c25181748996fee1d"
-  integrity sha512-Lpilqr8ptP3p4Z/6UN/ir0P1vXNG2YW9dSlm++BD27ZR1IR/Xq6Edl5Bx25x7Z9C8smzrdLu890DW45zn/vugQ==
+json-logic-engine@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/json-logic-engine/-/json-logic-engine-3.0.2.tgz#745a7bf72737063f186ec23ed6f3c0b409000c44"
+  integrity sha512-PYk9/T/wXSOMy86Wor/L12hF3Z4UiO0ooJi7AezLGUS0UoviFIItO9rBEP4xDhRiImlFlJ5prb/9pUZNZ1+0NA==
 
 json-parse-better-errors@^1.0.1:
   version "1.0.2"
